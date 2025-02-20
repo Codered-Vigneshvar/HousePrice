@@ -1,14 +1,17 @@
 import pickle
 import numpy as np
 import json
+import os
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder=".")  # Set current directory as template folder
 CORS(app)  # Allows requests from any origin
 
 @app.route('/')
 def home():
+    print("Current Directory:", os.getcwd())  # Debugging
+    print("Available Templates:", os.listdir("."))  # Debugging
     return render_template('index.html')
 
 # Load the linear regression model using a relative path
@@ -80,6 +83,12 @@ def predict():
     except Exception as e:
         print("Error:", str(e))
         return jsonify({'error': str(e)}), 500
+
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))  # Use Render's assigned port or default to 5000
+    app.run(debug=True, host='0.0.0.0', port=port)
+
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001)
