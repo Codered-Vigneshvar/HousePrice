@@ -17,6 +17,6 @@ This project is a web application that predicts the price per square foot and th
 - **Modern, Responsive UI:** Includes a scrolling disclaimer and a clean design.
 - **REST API Endpoints:** The Flask backend exposes endpoints for retrieving location names and making predictions.
 
-![Bangalore House Price Prediction](images/Screenshot_2025-02-20_at_5.03.02_PM.png)
+![Bangalore House Price Prediction](/Screenshot_2025-02-20_at_5.03.02_PM.png)
 
 
