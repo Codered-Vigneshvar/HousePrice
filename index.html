@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bangalore House Price Prediction</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Scrolling note styling */
+    .scrolling-note {
+      width: 100%;
+      background-color: #ffcc00;
+      color: #000;
+      padding: 10px 0;
+      overflow: hidden;
+      white-space: nowrap;
+      box-sizing: border-box;
+    }
+    .scrolling-note p {
+      display: inline-block;
+      padding-left: 100%;
+      animation: scroll-left 15s linear infinite;
+      font-size: 1em;
+      margin: 0;
+    }
+    @keyframes scroll-left {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-100%); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Scrolling disclaimer note -->
+  <div class="scrolling-note">
+    <p>Note: The prices shown here are sample data and do not represent original or actual market prices.</p>
+  </div>
+  
+  <div class="container">
+    <h1>Bangalore House Price Prediction</h1>
+    <p class="subtitle">
+      Enter details to predict the price per square foot and total cost of your dream home in Bangalore.
+    </p>
+    
+    <form id="predictionForm" class="prediction-form">
+      <div class="form-group">
+        <label for="total_sqft">Total Square Feet</label>
+        <input type="number" id="total_sqft" placeholder="e.g., 1200" required>
+      </div>
+      <div class="form-group">
+        <label for="location">Location</label>
+        <select id="location" required>
+          <option value="" disabled selected>Select Location</option>
+          <!-- Options will be dynamically loaded from the backend -->
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="bath">Bathrooms</label>
+        <input type="number" id="bath" placeholder="e.g., 2" min="1" required>
+      </div>
+      <div class="form-group">
+        <label for="bhk">Bedrooms (BHK)</label>
+        <input type="number" id="bhk" placeholder="e.g., 3" min="1" required>
+      </div>
+      <!-- Advanced prediction checkbox -->
+      <div class="form-group">
+        <input type="checkbox" id="advanced" name="advanced">
+        <label for="advanced">Advanced Prediction (Use XGBoost)</label>
+      </div>
+      <button type="submit">Predict Home Price</button>
+    </form>
+
+    <!-- Loader is hidden by default -->
+    <div id="loader" class="loader" style="display: none;"></div>
+    <!-- Prediction result will be displayed here -->
+    <div id="result" class="result"></div>
+  </div>
+  <footer>Created by Vigneshvar</footer>
+
+  <script>
+    // Fetch location names from the backend and populate the dropdown.
+    async function loadLocations() {
+      try {
+        const response = await fetch('http://localhost:5001/get_location_names');
+        const data = await response.json();
+        console.log('Locations received:', data);
+        const locationSelect = document.getElementById('location');
+        locationSelect.innerHTML = '<option value="" disabled selected>Select Location</option>';
+        data.locations.forEach(loc => {
+          const option = document.createElement('option');
+          option.value = loc;
+          option.textContent = loc.charAt(0).toUpperCase() + loc.slice(1);
+          locationSelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error loading locations:', error);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadLocations);
+
+    // Handle form submission.
+    document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const total_sqft = parseFloat(document.getElementById('total_sqft').value);
+      const location = document.getElementById('location').value;
+      const bath = parseInt(document.getElementById('bath').value);
+      const bhk = parseInt(document.getElementById('bhk').value);
+      const advanced = document.getElementById('advanced').checked;
+      
+      // Validate inputs.
+      if (total_sqft <= 0 || bath < 1 || bhk < 1 || !location) {
+        alert('Please enter valid values: Total Sqft > 0, Bath ≥ 1, BHK ≥ 1, and select a location.');
+        return;
+      }
+      
+      // Show loader and hide previous results.
+      document.getElementById('loader').style.display = 'block';
+      document.getElementById('result').style.display = 'none';
+      document.getElementById('result').innerHTML = '';
+      
+      // Build the payload with the advanced flag.
+      const payload = { total_sqft, location, bath, bhk, advanced };
+      console.log('Sending payload:', payload);
+      
+      try {
+        const response = await fetch('http://localhost:5001/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log('Prediction result:', data);
+        document.getElementById('loader').style.display = 'none';
+        const resultDiv = document.getElementById('result');
+        if (data.error) {
+          resultDiv.innerHTML = `Error: ${data.error}`;
+        } else {
+          resultDiv.innerHTML = `
+            Predicted Price per Sqft: ₹${data.price_per_sqft.toFixed(2)}<br>
+            Predicted Total Cost: ₹${data.total_cost.toFixed(2)}
+          `;
+        }
+        resultDiv.style.display = 'block';
+      } catch (error) {
+        console.error('Fetch Error:', error);
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('result').innerHTML = `Failed to fetch: ${error.message}`;
+        document.getElementById('result').style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+
+
