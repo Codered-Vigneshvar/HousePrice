@@ -1,24 +1,28 @@
 import pickle
 import numpy as np
 import json
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)  # Allows requests from any origin
 
-# Load the linear regression model
-linear_model_path = "/Users/vigneshvars/Documents/MLLearn/linear/banglore_home_prices_model.pickle"
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+# Load the linear regression model using a relative path
+linear_model_path = "banglore_home_prices_model.pickle"
 with open(linear_model_path, 'rb') as f:
     linear_model = pickle.load(f)
 
-# Load the XGBoost model
-xgb_model_path = "/Users/vigneshvars/Documents/MLLearn/linear/xgb_tuned_model.pickle"
+# Load the XGBoost model using a relative path
+xgb_model_path = "xgb_tuned_model.pickle"
 with open(xgb_model_path, 'rb') as f:
     xgb_model = pickle.load(f)
 
-# Load column names from columns.json
-columns_path = "/Users/vigneshvars/Documents/MLLearn/linear/columns.json"
+# Load column names from columns.json using a relative path
+columns_path = "columns.json"
 with open(columns_path, 'r') as f:
     data_columns_dict = json.load(f)
 if isinstance(data_columns_dict, dict):
@@ -42,7 +46,7 @@ def predict():
         location = data['location']
         bath = int(data['bath'])
         bhk = int(data['bhk'])
-        advanced = data.get('advanced', False)  # If true, use XGBoost; else, use linear regression
+        advanced = data.get('advanced', False)  # Use XGBoost if True, else linear regression
 
         # Prepare the feature vector
         x = np.zeros(len(data_columns))
@@ -59,7 +63,7 @@ def predict():
         else:
             return jsonify({'error': f"Location '{location}' not found in model columns"}), 400
 
-        # Use appropriate model based on the advanced flag
+        # Use the appropriate model based on the advanced flag
         if advanced:
             price_per_sqft = xgb_model.predict([x])[0]
         else:
@@ -79,6 +83,5 @@ def predict():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001)
-
 
 
