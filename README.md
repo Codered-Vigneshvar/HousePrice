@@ -16,5 +16,7 @@ This project is a web application that predicts the price per square foot and th
 - **Dynamic Location Dropdown:** The list of available locations is dynamically loaded from the model’s feature columns.
 - **Modern, Responsive UI:** Includes a scrolling disclaimer and a clean design.
 - **REST API Endpoints:** The Flask backend exposes endpoints for retrieving location names and making predictions.
-![Alt Text](iScreenshot 2025-02-20 at 5.03.02 PM.png)
+
+![Bangalore House Price Prediction](images/Screenshot_2025-02-20_at_5.03.02_PM.png)
+
 
